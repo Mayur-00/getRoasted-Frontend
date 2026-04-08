@@ -1,4 +1,5 @@
 "use client";
+import { DropdownMenu } from "radix-ui";
 import { useRef, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
@@ -7,7 +8,9 @@ type ShapeType = "pen" | "circle" | "rectangle" | "line";
 interface Point {
   x: number;
   y: number;
-}
+};
+const colors = ["black", "green", "red", "orange", "blue", "yellow", "white", ];
+const strokeWidth = [2, 5 , 10, 15, 20];
 
 export default function Whiteboard() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -18,6 +21,10 @@ export default function Whiteboard() {
   const canvasImageRef = useRef<ImageData | null>(null);
   const lastRemotePointRef = useRef<Point | null>(null);
   const roomId = "1";
+  const [selectedColor, setSelectedColor] = useState("black");
+  const [selectedStrokeWidth, setSelectedStrokeWidth] = useState(20);
+  const [strokeDropdown, setStrokeDropdown] = useState(false);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -28,19 +35,22 @@ export default function Whiteboard() {
     const socket = socketRef.current;
 
     ctx.lineCap = "round";
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "black";
+    ctx.lineWidth = selectedStrokeWidth;
+    ctx.strokeStyle = selectedColor;
 
-    socket.on("start-drawing", (currentPoint:Point) => {
+    socket.on("start-drawing", (currentPoint:Point, color:string) => {
       ctx.beginPath();
+      ctx.strokeStyle = color;
       ctx.moveTo(currentPoint.x, currentPoint.y);
+
       lastRemotePointRef.current = currentPoint;
     })
 
-    socket.on("draw", (currentPoint: Point) => {
+    socket.on("draw", ({currentPoint, color}) => {
       console.log("draw event received", currentPoint);
 
       const lastPoint = lastRemotePointRef.current;
+      ctx.strokeStyle =color
       if (!lastPoint) {
         // Start a new path
         ctx.beginPath();
@@ -55,6 +65,7 @@ export default function Whiteboard() {
     });
 
     socket.on("stop-drawing", () => {
+      ctx.strokeStyle = selectedColor;
   lastRemotePointRef.current = null;
 });
 
@@ -70,13 +81,17 @@ export default function Whiteboard() {
     return () => {
       socket.off("draw");
       socket.off("connected");
+      socket.off('stop-drawing');
     };
-  }, []);
+  }, [selectedColor, selectedStrokeWidth]);
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    ctx.strokeStyle = selectedColor;
 
     // Save current canvas state for shape preview
     canvasImageRef.current = ctx.getImageData(
@@ -101,7 +116,7 @@ export default function Whiteboard() {
       ctx.beginPath();
       ctx.moveTo(point.x, point.y);
     }
-     socketRef.current.emit("start-drawing", { roomId, point });
+     socketRef.current.emit("start-drawing", { roomId, point, color:selectedColor });
 
     setDrawing(true);
   };
@@ -113,7 +128,7 @@ export default function Whiteboard() {
     lastRemotePointRef.current = null;
   };
 
-  const paintRectangle = (
+    const paintRectangle = (
     canvas: HTMLCanvasElement,
     currentPoint: Point,
     startPoint: Point,
@@ -156,7 +171,7 @@ export default function Whiteboard() {
 
     if (shapeType === "pen") {
       paintPen(canvas, currentPoint);
-      socketRef.current.emit("draw", { roomId, currentPoint });
+      socketRef.current.emit("draw", { roomId, currentPoint, color:selectedColor });
     } else if (startPoint) {
       // For shapes, restore canvas and redraw
       if (canvasImageRef.current) {
@@ -192,8 +207,8 @@ export default function Whiteboard() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-4 ">
+      <div className="flex gap-2 p-2 items-center ">
         <button
           onClick={() => setShapeType("pen")}
           className={`px-4 py-2 rounded ${
@@ -240,6 +255,26 @@ export default function Whiteboard() {
         >
           🗑️ Clear
         </button>
+
+        <div className="h-15 w-50 border border-zinc-300 rounded p-2 grid grid-cols-8">
+          {
+            colors.map((color) =>(
+              <button key={color} onClick={()=>setSelectedColor(color)} style={{backgroundColor:color}} className={`h-5 w-5 rounded cursor-pointer ${selectedColor === color ? 'outline-2':'outline-0'} outline-gray-200`}></button>
+            ))
+          }
+    
+        </div>
+        <div className="h-10 w-10 border border-zinc-200 flex items-center justify-center relative" onClick={()=>setStrokeDropdown(!strokeDropdown)}><div style={{height:`${selectedStrokeWidth}px`, width:`${selectedStrokeWidth}px`, backgroundColor:selectedColor}} className={` rounded-full outline-2 outline-gray-300  `}></div>
+         <div className={`w-10 h-auto bg-gray-500  z-50 ${strokeDropdown ? "absolute -right-15 -bottom-30" :"hidden" } `}>
+          <div className="h-full w-full flex flex-col items-center justify-center">
+            {strokeWidth.map((width) => (
+              <div className="h-8 w-full bg-white flex items-center justify-center border border-zinc-200 " key={width} onClick={()=>{setSelectedStrokeWidth(width),setStrokeDropdown(false)}}> 
+              <div style={{height:`${width}px`, width:`${width}px`, backgroundColor:selectedColor}} className={` rounded-full outline-2 outline-gray-300  `}></div></div>
+            ))}
+            </div> 
+          </div></div>
+       
+
       </div>
 
       <canvas
