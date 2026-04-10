@@ -64,44 +64,57 @@ export const useWhiteBoard = create<WhiteBoardStoreIntercface>((set, get) => ({
         return;
       }
 
-      if (stroke.type === "pen") {
-        stroke.points.forEach((point, index) => {
+      switch (stroke.type) {
+        case "pen": {
+          stroke.points.forEach((point, index) => {
+            ctx.strokeStyle = stroke.color;
+            ctx.lineWidth = stroke.width;
+            if (index === 0) {
+              ctx.moveTo(point.x, point.y);
+            } else {
+              ctx.lineTo(point.x, point.y);
+            }
+          });
+          break;
+        }
+        case "rectangle": {
+          const { startPoint, endPoint } = stroke;
+          if (!startPoint || !endPoint) return;
           ctx.strokeStyle = stroke.color;
           ctx.lineWidth = stroke.width;
-          if (index === 0) {
-            ctx.moveTo(point.x, point.y);
-          } else {
-            ctx.lineTo(point.x, point.y);
-          }
-        });
-      } else if (stroke.type === "rectangle") {
-        const { startPoint, endPoint } = stroke;
-        if (!startPoint || !endPoint) return;
-        ctx.strokeStyle = stroke.color;
-        ctx.lineWidth = stroke.width;
-        const x = Math.min(startPoint.x, endPoint.x);
-        const y = Math.min(startPoint.y, endPoint.y);
-        const w = Math.abs(endPoint.x - startPoint.x);
-        const h = Math.abs(endPoint.y - startPoint.y);
+          const x = Math.min(startPoint.x, endPoint.x);
+          const y = Math.min(startPoint.y, endPoint.y);
+          const w = Math.abs(endPoint.x - startPoint.x);
+          const h = Math.abs(endPoint.y - startPoint.y);
 
-        ctx.strokeRect(x, y, w, h);
-      } else if (stroke.type === "circle") {
-        const { startPoint, endPoint } = stroke;
-        if (!startPoint || !endPoint) return;
-        ctx.strokeStyle = stroke.color;
-         ctx.lineWidth = stroke.width;
-        const radius = Math.sqrt(
-          Math.pow(endPoint.x - startPoint.x, 2) +
-            Math.pow(endPoint.y - startPoint.y, 2),
-        );
-        ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI);
-      } else if (stroke.type === "line") {
-        const { startPoint, endPoint } = stroke;
-        if (!startPoint || !endPoint) return;
-        ctx.strokeStyle = stroke.color;
-         ctx.lineWidth = stroke.width;
-        ctx.moveTo(startPoint.x, startPoint.y);
-        ctx.lineTo(endPoint.x, endPoint.y);
+          ctx.strokeRect(x, y, w, h);
+          break;
+        }
+        case "circle": {
+          const { startPoint, endPoint } = stroke;
+          if (!startPoint || !endPoint) return;
+          ctx.strokeStyle = stroke.color;
+          ctx.lineWidth = stroke.width;
+          const radius = Math.sqrt(
+            Math.pow(endPoint.x - startPoint.x, 2) +
+              Math.pow(endPoint.y - startPoint.y, 2),
+          );
+          ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI);
+          break;
+        }
+
+        case "line": {
+          const { startPoint, endPoint } = stroke;
+          if (!startPoint || !endPoint) return;
+          ctx.strokeStyle = stroke.color;
+          ctx.lineWidth = stroke.width;
+          ctx.moveTo(startPoint.x, startPoint.y);
+          ctx.lineTo(endPoint.x, endPoint.y);
+          break;
+        }
+        default: {
+          console.log("nothing to print");
+        }
       }
 
       ctx.stroke();

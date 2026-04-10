@@ -211,7 +211,6 @@ export default function Whiteboard() {
     //   ctx.stroke();
     // }
   };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     console.log(e);
 
@@ -233,10 +232,11 @@ export default function Whiteboard() {
         height={500}
         tabIndex={0}
         className=" bg-white cursor-crosshair"
-        onMouseDown={startDrawing}
-        onMouseUp={stopDrawing}
-        onMouseMove={draw}
-        onMouseLeave={stopDrawing}
+        style={{ touchAction: "none" }}
+        onPointerDown={startDrawing}
+        onPointerUp={stopDrawing}
+        onPointerMove={draw}
+        onPointerLeave={stopDrawing}
         onKeyDown={handleKeyDown}
       />
     </div>

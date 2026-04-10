@@ -12,5 +12,6 @@ export interface StrokeElemType {
   width: number;
   startPoint?:{ x: number; y: number };
   endPoint?:{ x: number; y: number };
+  fillColor?:string;
 
 }
