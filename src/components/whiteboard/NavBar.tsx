@@ -10,19 +10,15 @@ const NavBar = () => {
   const [strokeDropdown, setStrokeDropdown] = useState(false);
 
   const {
-    setDrawingTrue,
-    setDrawingFalse,
     setColor,
     setStrokeWidth,
     setShapeType,
-    setStartPoint,
+    clearUndoRedoArr
   } = useWhiteBoard();
   const shapeType = useWhiteBoard((state) => state.shapeType);
-  const drawing = useWhiteBoard((state) => state.isDrawing);
   const selectedStrokeWidth = useWhiteBoard(
     (state) => state.selectedStrokeWidth,
   );
-  const startPoint = useWhiteBoard((state) => state.startPoint);
   const selectedColor = useWhiteBoard((state) => state.selectedColor);
    const canvasRef = useWhiteBoard((state) => state.canvasRef) as React.RefObject<HTMLCanvasElement> | null;
 
@@ -34,7 +30,7 @@ const NavBar = () => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
+    clearUndoRedoArr();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
@@ -44,6 +40,7 @@ const NavBar = () => {
     options.map((opt)=>(
             <button
             key={opt.id}
+            name={`${opt.type}-btn`}
         onClick={() => setShapeType(opt.type)}
         className={`px-2 py-2 rounded-sm  ${
           shapeType === opt.type
@@ -58,6 +55,7 @@ const NavBar = () => {
 
       <button
         onClick={clear}
+        name="clear-btn"
         className="px-2 py-2 rounded text-black hover:bg-red-60 hover:bg-red-200"
         >
         <Trash className="size-4"/>
@@ -70,6 +68,7 @@ const NavBar = () => {
         {colors.map((color) => (
           <button
             key={color}
+            name={`${color}-color-btn`}
             onClick={() => setColor(color)}
             style={{ backgroundColor: color }}
             className={`h-5 w-5 rounded border border-zinc-500 cursor-pointer ${selectedColor === color ? "outline-2" : "outline-0"} outline-blue-300`}
@@ -77,6 +76,7 @@ const NavBar = () => {
         ))}
       </div>
       <div
+     tabIndex={0}
         className="h-10 w-10 border rounded-md border-zinc-200 flex items-center justify-center relative bg-white"
         onClick={() => setStrokeDropdown(!strokeDropdown)}
       >
@@ -93,7 +93,8 @@ const NavBar = () => {
         >
           <div className="h-full w-full flex flex-col items-center justify-center">
             {strokeWidth.map((width) => (
-              <div
+              <button
+              name="stroke-opt-btn"
                 className="h-8 w-full  flex items-center justify-center t hover:bg-zinc-200  "
                 key={width}
                 onClick={() => {
@@ -108,7 +109,7 @@ const NavBar = () => {
                   }}
                   className={` rounded-full outline-2 outline-gray-300  `}
                 ></div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

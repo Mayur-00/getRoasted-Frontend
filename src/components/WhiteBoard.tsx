@@ -224,14 +224,14 @@ export default function Whiteboard() {
   };
 
   return (
-    <div className="flex flex-col gap-4 items-center h-full w-full ">
+    <div className="flex flex-col gap-4 items-center h-full w-full overflow-hidden">
       <NavBar />
       <canvas
         ref={canvasRef}
         width={1360}
         height={500}
         tabIndex={0}
-        className=" bg-white cursor-crosshair"
+        className=" bg-white cursor-crosshair border "
         style={{ touchAction: "none" }}
         onPointerDown={startDrawing}
         onPointerUp={stopDrawing}

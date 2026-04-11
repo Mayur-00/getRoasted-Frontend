@@ -28,6 +28,7 @@ const UndoButton = () => {
 
   return (
     <button
+    name="undo-btn"
       onClick={undo}
       disabled={strokesArray.length === 0}
       className="px-2 py-2 rounded text-black hover:bg-red-60  hover:bg-blue-200 disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:text-zinc-500"

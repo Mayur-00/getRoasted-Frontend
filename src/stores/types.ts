@@ -24,6 +24,7 @@ export interface WhiteBoardStoreIntercface {
   setCurrentStroke: (stroke:StrokeElemType | null) =>void
   pullStrokesOutOfArray: ()=> void;
   redoStrokesArray: ()=> void;
+  clearUndoRedoArr: ()=> void;
   paintCanvas: ()=>void
 
 

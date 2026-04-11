@@ -40,6 +40,11 @@ export const useWhiteBoard = create<WhiteBoardStoreIntercface>((set, get) => ({
 
     strokesArray.push(redoArray.pop()!);
   },
+  clearUndoRedoArr: () => {
+    set({strokesArray:[]});
+    set({redoArray:[]});
+    
+  },
   paintCanvas: () => {
     const { canvasRef, isDrawing, strokesArray, currentStroke } = get();
 
